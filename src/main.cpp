@@ -54,8 +54,8 @@ int main() {
   int lane = 1;
   double ref_vel = 0.0;
 
-  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,
-               &map_waypoints_dx,&map_waypoints_dy]
+  h.onMessage([&ref_vel, &lane, &map_waypoints_x, &map_waypoints_y, &map_waypoints_s,
+               &map_waypoints_dx, &map_waypoints_dy]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -201,8 +201,6 @@ int main() {
             s.set_points(ptsx, ptsy);
 
             // Output path points from previous path for continuity.
-            vector<double> next_x_vals;
-            vector<double> next_y_vals;
             for ( int i = 0; i < prev_size; i++ ) {
               next_x_vals.push_back(previous_path_x[i]);
               next_y_vals.push_back(previous_path_y[i]);
