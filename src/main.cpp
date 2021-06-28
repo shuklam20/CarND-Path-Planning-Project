@@ -103,6 +103,7 @@ int main() {
             car_s = end_path_s;
           }
 
+
           bool too_close = false;
           bool car_on_left = false;
           bool car_on_right = false;
@@ -112,59 +113,59 @@ int main() {
           for (int i=0; i<sensor_fusion.size(); i++){
             //car is in my lane
             float d = sensor_fusion[i][6];
-            if (d < (2+lane*4+2) && d > (2+lane*4-2)){
             int car_lane;
-              // is it on the same lane we are
-              if ( d > 0 && d < 4 ) {
-                car_lane = 0;
-              } else if ( d > 4 && d < 8 ) {
-                car_lane = 1;
-              } else if ( d > 8 && d < 12 ) {
-                car_lane = 2;
-              }
-            
-              double vx = sensor_fusion[i][3];
-              double vy = sensor_fusion[i][4];
-              double check_speed = sqrt(vx*vx + vy*vy);
-              double check_car_s = sensor_fusion[i][5];
+            // get lane of the car from d value of sensor fusion data
+            if (d > 0 && d < 4) {
+              car_lane = 0;
+            } 
+            else if (d > 4 && d < 8) {
+              car_lane = 1;
+            } 
+            else if (d > 8 && d < 12) {
+              car_lane = 2;
+            }
+            else continue;
 
-              
+            double vx = sensor_fusion[i][3];
+            double vy = sensor_fusion[i][4];
+            double check_speed = sqrt(vx*vx + vy*vy);
+            double check_car_s = sensor_fusion[i][5];
 
-              check_car_s += (double)prev_size* 0.02 * check_speed; // if using previous points can project s value out
-              // check s value is greater than mine and s gap
-              if((check_car_s > car_s) && ((check_car_s - car_s) < 30)){
-                // ref_vel = 29.5;
-                too_close = true;
-              }
-              else if ((car_s - 30 < check_car_s) && (car_s + 30 > check_car_s)){
-                if (car_lane - lane == -1)
-                  car_on_left = true;
-                else if ( car_lane - lane == 1)
-                  car_on_right = true;
-              }
+            // Project s value out using previous points 
+            check_car_s += ((double)prev_size*0.02*check_speed);
+
+            // check s value is greater than mine and s gap
+            if((car_lane == lane) && (check_car_s > car_s) && ((check_car_s - car_s) < 30)){
+              too_close = true;
+            }
+            else if ((car_s - 30 < check_car_s) && (car_s + 30 > check_car_s)){
+              if (car_lane - lane == -1)
+                car_on_left = true;
+              else if ( car_lane - lane == 1)
+                car_on_right = true;
             }
           }
 
 
+          double speed_diff = 0;
 
+          // if there is a car ahead of us
           if (too_close) {
-            if ( !car_on_left && lane > 0 ) {
-              // if there is no car left and there is a left lane.
-              lane--; // Change lane left.
-            } else if ( !car_on_right && lane != 2 ){
-              // if there is no car right and there is a right lane.
+            // change to left lane if no car on the left and we are also not in the left-most lane
+            if (!car_on_left && lane > 0 ) {
+              lane--;
+            }
+            // change to right lane if no car on the right and we are also not in the right-most lane
+            else if (!car_on_right && lane < 2 ){
               lane++; // Change lane right.
-            } else {
-              ref_vel -= .224;
+            } 
+            else {
+              ref_vel -= .224;	// speed_diff -= .224;
             }
           }
           else if(ref_vel < 49.5){
-            ref_vel += .224;
+            speed_diff += .224;
           }
-
-
-
-
 
           vector<double> ptsx;
           vector<double> ptsy;
@@ -242,14 +243,16 @@ int main() {
 
             // fill up the rest of the path planner after filling it with previous points, here we will always output 50 points
             for( int i = 1; i < 50 - prev_size; i++ ) {
-//               ref_vel += speed_diff;
+              ref_vel += speed_diff;
               if ( ref_vel > 49.5 ) {
                 ref_vel = 49.5;
-              } else if ( ref_vel < 2.24 ) {
+              }
+              else if ( ref_vel < 2.24 ) {
                 ref_vel = 2.24;
               }
+
               double N = target_dist/(0.02*ref_vel/2.24);
-              double x_point = x_add_on + target_x/N;
+              double x_point = x_add_on + target_x/N; 
               double y_point = s(x_point);
 
               x_add_on = x_point;
@@ -266,11 +269,6 @@ int main() {
               next_x_vals.push_back(x_point);
               next_y_vals.push_back(y_point);
             }
-
-
-          // // // // / ////////
-
-
 
 
           msgJson["next_x"] = next_x_vals;
