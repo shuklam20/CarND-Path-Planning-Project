@@ -33,7 +33,14 @@ Here is the data provided from the Simulator to the C++ Program
 
 ## Concepts covered in this project
 
+### Prediction
+This part of the code deals with predicting the pattern of the traffic about whether there is a car in front of us or if there are cars on our left or right if we want to change lanes. The input comes from telemetry and Sensor Fusion data. In the code, I have consider a safe distance to be more than 30 meters for my car to consider it is safe to make a decision.
 
+### Behaviour Planning
+The behavior of our car after predictions are made - should we acclerate/ change lanes etc? 
+
+### Trajectory Generation
+Calculate trajectories from historical data points, coordinates, s/d/t values from behavior planning. Instead of polynomial trajectory generation studied in the class, I used C++ Spline function to help in generating trajectories. 
 
 #### Main car's localization Data (No Noise)
 
