@@ -128,11 +128,11 @@ int main() {
 
             double vx = sensor_fusion[i][3];
             double vy = sensor_fusion[i][4];
-            double check_speed = sqrt(vx*vx + vy*vy);
+            double check_speed = sqrt(vx * vx + vy * vy);
             double check_car_s = sensor_fusion[i][5];
 
             // Project s value out using previous points 
-            check_car_s += ((double)prev_size*0.02*check_speed);
+            check_car_s += ((double)prev_size * 0.02 * check_speed);
 
             // check s value is greater than mine and s gap
             if((car_lane == lane) && (check_car_s > car_s) && ((check_car_s - car_s) < 30)){
@@ -148,6 +148,8 @@ int main() {
 
 
           double speed_diff = 0;
+          const double accn_max = .224;
+          const double speed_limit = 50.0;
 
           // if there is a car ahead of us
           if (too_close) {
@@ -160,11 +162,11 @@ int main() {
               lane++; // Change lane right.
             } 
             else {
-              ref_vel -= .224;	// speed_diff -= .224;
+              ref_vel -= accn_max;  // speed_diff -= accn_max;
             }
           }
-          else if(ref_vel < 49.5){
-            speed_diff += .224;
+          else if(ref_vel < speed_limit - 0.5){
+            speed_diff += accn_max;
           }
 
           vector<double> ptsx;
@@ -202,9 +204,9 @@ int main() {
           }
 
           // in Frenet add evenly 30m spaced points ahead of the starting reference
-            vector<double> next_wp0 = getXY(car_s + 30, 2 + 4*lane, map_waypoints_s, map_waypoints_x, map_waypoints_y);
-            vector<double> next_wp1 = getXY(car_s + 60, 2 + 4*lane, map_waypoints_s, map_waypoints_x, map_waypoints_y);
-            vector<double> next_wp2 = getXY(car_s + 90, 2 + 4*lane, map_waypoints_s, map_waypoints_x, map_waypoints_y);
+            vector<double> next_wp0 = getXY(car_s + 30, 2 + 4 * lane, map_waypoints_s, map_waypoints_x, map_waypoints_y);
+            vector<double> next_wp1 = getXY(car_s + 60, 2 + 4 * lane, map_waypoints_s, map_waypoints_x, map_waypoints_y);
+            vector<double> next_wp2 = getXY(car_s + 90, 2 + 4 * lane, map_waypoints_s, map_waypoints_x, map_waypoints_y);
 
             ptsx.push_back(next_wp0[0]);
             ptsx.push_back(next_wp1[0]);
@@ -215,7 +217,7 @@ int main() {
             ptsy.push_back(next_wp2[1]);
 
             // Making coordinates to local car coordinates.
-            for ( int i = 0; i < ptsx.size(); i++ ) {
+            for ( int i = 0; i < ptsx.size(); i++) {
               double shift_x = ptsx[i] - ref_x;
               double shift_y = ptsy[i] - ref_y;
 
@@ -229,7 +231,7 @@ int main() {
             s.set_points(ptsx, ptsy);
 
             // Output path points from previous path for continuity.
-            for ( int i = 0; i < prev_size; i++ ) {
+            for ( int i = 0; i < prev_size; i++) {
               next_x_vals.push_back(previous_path_x[i]);
               next_y_vals.push_back(previous_path_y[i]);
             }
@@ -237,21 +239,21 @@ int main() {
             // Calculate distance y position on 30 m ahead.
             double target_x = 30.0;
             double target_y = s(target_x);
-            double target_dist = sqrt(target_x*target_x + target_y*target_y);
+            double target_dist = sqrt(target_x * target_x + target_y * target_y);
 
             double x_add_on = 0;
 
             // fill up the rest of the path planner after filling it with previous points, here we will always output 50 points
             for( int i = 1; i < 50 - prev_size; i++ ) {
               ref_vel += speed_diff;
-              if ( ref_vel > 49.5 ) {
-                ref_vel = 49.5;
+              if (ref_vel > speed_limit - 0.5) {
+                ref_vel = speed_limit - 0.5;
               }
               else if ( ref_vel < 2.24 ) {
                 ref_vel = 2.24;
               }
 
-              double N = target_dist/(0.02*ref_vel/2.24);
+              double N = target_dist / (0.02 * ref_vel / 2.24);
               double x_point = x_add_on + target_x/N; 
               double y_point = s(x_point);
 
