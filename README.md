@@ -36,14 +36,17 @@ Here is the data provided from the Simulator to the C++ Program
 
 ## Concepts covered in this project
 
-### Prediction
+### Prediction [Lines 107-147](./src/main.cpp#L107-L147)
 This part of the code deals with predicting the pattern of the traffic about whether there is a car in front of us or if there are cars on our left or right if we want to change lanes. The input comes from telemetry and Sensor Fusion data. In the code, I have consider a safe distance to be more than 30 meters for my car to consider it is safe to make a decision.
 
-### Behaviour Planning
-The behavior of our car after predictions are made - should we acclerate/ change lanes etc? 
+### Behaviour Planning [Lines 149-170](./src/main.cpp#L149-L170)
+* The behavior of our car after predictions are made - should we acclerate/ change lanes etc? 
+* Based on the prediction of the situation we are in, this part of the code increases or decreases the speed, or make a lane change decisions. Instead of increasing the speed at this part of the code, a speed_diff is created to be used for speed changes when generating the trajectory in the last part of the code. This approach makes the car more responsive acting faster to changing situations like a car in front of it trying to apply breaks to cause a collision.
 
-### Trajectory Generation
-Calculate trajectories from historical data points, coordinates, s/d/t values from behavior planning. Instead of polynomial trajectory generation studied in the class, I used C++ Spline function to help in generating trajectories. 
+### Trajectory Generation [Lines 172-273](./src/main.cpp#L172-L273)
+* Calculate trajectories from historical data points, coordinates, s/d/t values from behavior planning. Instead of polynomial trajectory generation studied in the class, I used C++ Spline function to help in generating trajectories.
+* The last two points of the previous trajectory (or the car position if there are no previous trajectory) are used in conjunction three points at a far distance to initialize the spline calculation. The coordinates are also transformed to local car coordinates for ease of calculations.  In order to ensure more continuity on the trajectory (in addition to adding the last two point of the pass trajectory to the spline adjustment), the pass trajectory points are copied to the new trajectory. The rest of the points are calculated by evaluating the spline and transforming the output coordinates to non-local coordinates. The speed change is decided on the behavior part of the code, but it is used in that part to increase/decrease speed on every trajectory points instead of doing it for the complete trajectory.
+
 
 #### Main car's localization Data (No Noise)
 
@@ -87,20 +90,15 @@ the path has processed since last time.
 
 ## Rubrics
 
-### The car is able to drive at least 4.32 miles without incident:
-Yes, there weren't any collisions with other cars. The car did not come into contact with any of the other cars on the road or had any other incidents of any kind.
+:white_check_mark: The car drives according to the speed limit. The car adjusts the speed automatically. It adjusts the speed based on the nature of traffic and has no collision or any other violations.
 
-### The car drives according to the speed limit.
-The speed limit is never crossed, in the code I set for the speed to be 0.5 mph below the posted speed limit. The car doesn't drive faster than the speed limit. Also the car isn't driving much slower than speed limit unless obstructed by traffic.
+:white_check_mark: The car drove in a more safely manner by ensuring that the total acceleration of 10m/s^2 and max jerk of 10m/s^3 were not violated
 
-### Max Acceleration and Jerk are not Exceeded.
-No, they don't. The car does not exceed a total acceleration of 10 m/s^2 and a jerk of 10 m/s^3.
+:white_check_mark: The car didn't get in contact with another vehicle during the simulation, this indicates that good precautions were taken during the implementation.
 
-### The car stays in its lane, except for the time between changing lanes.
-The car doesn't spend more than a 3 second length out side the lane lanes during changing lanes, and every other time the car stays inside one of the 3 lanes on the right hand side of the road.
+:white_check_mark: The car was changing lanes in a very smooth manner without spending more than 3s out of a lane!
 
-### The car is able to change lanes
-As smoothly as one can imagine!
+:white_check_mark: The car was able to change lanes smoothly when behind a slower vehicle, the car also sensed whether the lane it was going to take was cleared off which was nice since it avoids collision with other vehicles on the new lane.
 
 
 ---
