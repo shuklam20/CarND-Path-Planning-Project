@@ -146,7 +146,7 @@ int main() {
             }
           }
 
-
+          // I took the idea of speed diff from the repo of darienmt: https://github.com/darienmt/CarND-Path-Planning-Project-P1
           double speed_diff = 0;
           const double accn_max = .224;
           const double speed_limit = 50.0;
